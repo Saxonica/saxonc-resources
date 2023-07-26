@@ -1,2 +1,2 @@
 # saxonc-resources
-SaxonC Resources repository - samples, unit tests, W3C test suite driver
+SaxonC Resources repository which contains samples, unit tests, W3C test suite driver
