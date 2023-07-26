@@ -17,7 +17,7 @@ start_memory = process.memory_info().rss
 path = None
 results_path = None
 catalog = None
-saxon_version = "@@version@@"
+saxon_version = "12.3"
 
 assert_set = set()
 
