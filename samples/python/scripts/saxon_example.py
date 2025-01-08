@@ -1,4 +1,4 @@
-import saxonche
+from saxonche import *
 
 proc = PySaxonProcessor(license=False)
    
@@ -40,7 +40,7 @@ node = proc.parse_xml(xml_text=xml)
 print('test 1\n node='+node.string_value)
 xp.set_context(xdm_item=node)
 item = xp.evaluate_single('//person[1]')
-if isinstance(item,saxonche.PyXdmNode):
+if isinstance(item,PyXdmNode):
    print(item.string_value)
 
 value = proc.make_double_value(3.5)
