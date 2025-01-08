@@ -1,6 +1,6 @@
-import saxonc@@edition@@
+import saxonche
 
-with saxonc@@edition@@.PySaxonProcessor(license=True) as proc:
+with saxonche.PySaxonProcessor(license=True) as proc:
    
    print("Test Python")
    print(proc.version)
