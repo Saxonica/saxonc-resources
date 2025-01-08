@@ -1,6 +1,6 @@
 from tempfile import mkstemp
 import pytest
-from saxonc@@edition@@ import *
+from saxonche import *
 import os
 from pathlib import Path
 from os.path import isfile
