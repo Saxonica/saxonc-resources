@@ -42,7 +42,7 @@ function exampleSimple2($proc, $validator)
 
         //$proc->setProperty('base', '/');
         $validator->setProperty('report-node', 'true');
-        $validator->registerSchemaFromFile("xsd/family-ext.xsd");
+        $validator->registerSchemaFromFile("../data/family-ext.xsd");
 
         $validator->validate("xml/family.xml");
         $node = $validator->getValidationReport();
@@ -66,8 +66,8 @@ function exampleSimple2($proc, $validator)
      echo '<b>exampleSimple3:</b><br/>';
      try {
 
-         $validator->registerSchemaFromFile("xsd/family-ext.xsd");
-         $validator->registerSchemaFromFile("xsd/family.xsd");
+         $validator->registerSchemaFromFile("../data/family-ext.xsd");
+         $validator->registerSchemaFromFile("../data/family.xsd");
 
 
          $validator->setProperty('report-node', 'true');
@@ -88,34 +88,37 @@ function exampleSimple2($proc, $validator)
      }
  }
 		
-	   $var ='/usr/lib' ;
-       putenv("SAXONC_HOME=$var");
+	   //$var ='/usr/lib' ;
+       //putenv("SAXONC_HOME=$var");
             
-            $books_xml = "query/books.xml";
-            $books_to_html_xq = "query/books-to-html.xq";
-            $baz_xml = "xml/baz.xml";
-            $cities_xml = "xml/cities.xml";
-            $embedded_xml = "xml/embedded.xml";
-            // current directory
-
+        $books_xml = "query/books.xml";
+        $books_to_html_xq = "query/books-to-html.xq";
+        $baz_xml = "xml/baz.xml";
+        $cities_xml = "xml/cities.xml";
+        $embedded_xml = "xml/embedded.xml";
+        // current directory
+        try {
             $proc = new Saxon\SaxonProcessor(true);
-	    $validator = $proc->newSchemaValidator();
-		
+            $validator = $proc->newSchemaValidator();
+
             $version = $proc->version();
-   	    echo '<b>PHP Schema Validation in SaxonC examples</b><br/>';
-            echo 'Saxon Processor version: '.$version;
-            echo '<br/>';        
+            echo '<b>PHP Schema Validation in SaxonC examples</b><br/>';
+            echo 'Saxon Processor version: ' . $version;
+            echo '<br/>';
             exampleSimple1($proc, $validator);
 
-            echo '<br/>';               
-	    exampleSimple2($proc, $validator);
-	    echo '<br/>';
-	    exampleSimple3($proc, $validator);
+            echo '<br/>';
+            exampleSimple2($proc, $validator);
+            echo '<br/>';
+            exampleSimple3($proc, $validator);
 
-	    unset($validator);            
+            unset($validator);
             unset($proc);
-	
-        
+
+        }  catch (Exception $e) {
+                 echo 'Failed to create SchemaValidator: ', $e->getMessage(), "\n";
+
+             }
         ?>
     </body>
 </html>

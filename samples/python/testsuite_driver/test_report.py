@@ -1,7 +1,10 @@
 import xml.etree.ElementTree as ET
-from saxonche import *
+import os
 
 from datetime import datetime
+
+import import_saxon
+saxonc = import_saxon.import_mod()
 
 now = datetime.now()
 
@@ -27,7 +30,7 @@ class PyTestReport:
         self.product = p
         self.version = v
 
-    def write_result_file_preamble(self, proc: PySaxonProcessor, td, config: list):
+    def write_result_file_preamble(self, proc: saxonc.PySaxonProcessor, td, config: list):
         global product
         global version
         global test_driver
@@ -39,12 +42,12 @@ class PyTestReport:
         ET.register_namespace("", self.test_driver_namespace)
         self.result_root = ET.Element('test-suite-result', xmlns=self.test_driver_namespace)
         implementation = ET.SubElement(self.result_root, "implementation", name=self.product, version=self.version)
-        ET.SubElement(implementation, "organization",  name="https://www.saxonica.com/", anonymous="false")
+        ET.SubElement(implementation, "organization",  name="http://www.saxonica.com/", anonymous="false")
         ET.SubElement(implementation, "submitter", name="O'Neil Delpratt", email="oneil@saxonica.com")
         ET.SubElement(implementation, "configuration", timeRun=str(current_time), lang=self.language)
         ET.SubElement(self.result_root, "test-run", dateRun=str(datetime.today())[0:10], testsuiteVersion="3.0.1")
 
-    def start_test_set_element(self, func_set_node: PyXdmNode, comment):
+    def start_test_set_element(self, func_set_node: saxonc.PyXdmNode, comment):
         value = func_set_node.get_attribute_value("name")
         self.current_test_set = ET.SubElement(self.result_root, "test-set", name=value)
         if comment is not None:
@@ -59,11 +62,16 @@ class PyTestReport:
             print("Test report error: current test set not found")
 
 
-    def write_result_file_postamble(self, proc: PySaxonProcessor, cwd: str):
+    def write_result_file_postamble(self, proc: saxonc.PySaxonProcessor, cwd: str):
         tree = ET.ElementTree(self.result_root)
         ET.indent(tree, space=" ", level=0)
         if not cwd.endswith('/'):
             cwd = cwd + '/'
+        filename = cwd + self.product.lower() + 'c_' + self.test_driver + '_' + self.language + '.xml'
+        if os.getenv("SAXONC_TESTSUITE_DEBUG") is not None:
+            print("cwd", cwd)
+            print("Saving to = ", filename)
 
-        tree.write(cwd + self.product.lower() + 'c_' + self.test_driver + '_' + self.language + '.xml')
+
+        tree.write(file_or_filename=filename)
 

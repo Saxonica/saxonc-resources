@@ -1,4 +1,4 @@
-#include "../../Saxon.C.API/SaxonCXPath.h"
+#include "saxonc/SaxonCXPath.h"
 #include <stdio.h> /* defines FILENAME_MAX */
 #if defined(__APPLE__) || defined __linux__
 #include <unistd.h>
@@ -8,8 +8,14 @@
 #define GetCurrentDir _getcwd
 #endif
 
-int main() {
 
+void path_join(char* result, const char* segment1, const char* segment2) {
+  int path_len = strlen(segment1) + strlen(segment2) + 1;
+  snprintf(result, path_len, "%s%s", segment1, segment2);
+}
+
+int main(int argc, char *argv[]) {
+  const char * const data_dir = argc > 1 ? argv[1] : "";
   char cwd[FILENAME_MAX]; // create string buffer to hold path
   GetCurrentDir(cwd, FILENAME_MAX);
   printf("CWD = %s\n", cwd);
@@ -48,16 +54,19 @@ int main() {
     return -1;
   }
 
+  char cat_xml_file[FILENAME_MAX];
+  path_join(cat_xml_file, data_dir, "/cat.xml");
+
   const char *verCh = version(environi, processor);
   printf("XPath Tests\n\nSaxon version: %s \n", verCh);
-  setProperty(&properties, &propLen, &propCap, "s", "../data/cat.xml");
+  setProperty(&properties, &propLen, &propCap, "s", cat_xml_file);
 
-  sxnc_value *result = evaluate(environi, xpathProc, cwd, "/out/person",
+  sxnc_value *result = evaluate(environi, xpathProc, cwd, "/out/person", NULL,
                                 parameters, properties, 0, propLen);
 
   bool resultBool =
-      effectiveBooleanValue(environi, xpathProc, cwd, "count(/out/person)>0",
-                            parameters, properties, 0, propLen);
+      effectiveBooleanValue(environi, xpathProc, cwd, "count(/out/person)>0", NULL,
+                            parameters, properties, parLen, propLen);
 
   if (!result) {
     printf("result is null");

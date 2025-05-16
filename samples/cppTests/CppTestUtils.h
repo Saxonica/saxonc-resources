@@ -17,6 +17,10 @@
 #include <direct.h>
 #define GetCurrentDir _getcwd
 #endif
+#include <cstdarg>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #include <list>
 
@@ -46,6 +50,45 @@ public:
     } else {
       return 1;
     }
+  }
+
+  static bool CheckWord(char* filename, char* search)
+  {
+    int offset;
+    std::string line;
+    std::ifstream Myfile;
+    Myfile.open (filename);
+
+    if (Myfile.is_open())
+    {
+      while (!Myfile.eof())
+      {
+        getline(Myfile,line);
+        if ((offset = line.find(search, 0)) != std::string::npos)
+        {
+          //cout << "found '" << search << "' in '" << line << "'" << endl;
+          Myfile.close();
+          return true;
+        }
+
+      }
+      Myfile.close();
+    }
+    /*else
+      cout << "Unable to open this file." << endl;*/
+
+    return false;
+  }
+
+  static const std::string concat(int n, ...) {
+    std::string result;
+    va_list args;
+    va_start(args, n);
+    for (int i = 0; i < n; i++) {
+      result.append(va_arg(args, char*));
+    }
+    va_end(args);
+    return result;
   }
 
 private:

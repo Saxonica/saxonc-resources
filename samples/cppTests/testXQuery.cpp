@@ -1,12 +1,12 @@
 
-#include "../../Saxon.C.API/SaxonProcessor.h"
-#include "../../Saxon.C.API/XdmArray.h"
-#include "../../Saxon.C.API/XdmAtomicValue.h"
-#include "../../Saxon.C.API/XdmFunctionItem.h"
-#include "../../Saxon.C.API/XdmItem.h"
-#include "../../Saxon.C.API/XdmMap.h"
-#include "../../Saxon.C.API/XdmNode.h"
-#include "../../Saxon.C.API/XdmValue.h"
+#include "saxonc/SaxonProcessor.h"
+#include "saxonc/XdmArray.h"
+#include "saxonc/XdmAtomicValue.h"
+#include "saxonc/XdmFunctionItem.h"
+#include "saxonc/XdmItem.h"
+#include "saxonc/XdmMap.h"
+#include "saxonc/XdmNode.h"
+#include "saxonc/XdmValue.h"
 #include "CppTestUtils.h"
 #include <string>
 
@@ -20,12 +20,12 @@ using namespace std;
  * Test1:
  */
 void testxQuery1(SaxonProcessor *processor, XQueryProcessor *queryProc,
+                 const std::string *const dataDir,
                  sResultCount *sresult) {
   cout << endl << "Test testXQuery1:" << endl;
   queryProc->clearParameters();
   queryProc->clearProperties();
-  queryProc->setProperty("s", "../data/cat.xml");
-
+  queryProc->setProperty("s", CppTestUtils::concat(2, dataDir->c_str(), "/cat.xml").c_str());
   queryProc->setProperty("qs", "<out>{count(/out/person)}</out>");
 
   const char *result = nullptr;
@@ -59,6 +59,40 @@ void testxQuery1(SaxonProcessor *processor, XQueryProcessor *queryProc,
     sresult->failure++;
     sresult->failureList.push_back("testXQuery1-3");
     cout << "Exception throw = " << e.what() << endl;
+  }
+
+  queryProc->clearParameters();
+  queryProc->clearProperties();
+}
+
+
+void testxQueryToString_OnEmptySequence(XQueryProcessor *queryProc,
+                    sResultCount *sresult) {
+  cout << endl << "Test testxQueryToString_OnEmptySequence:" << endl;
+  queryProc->clearParameters();
+  queryProc->clearProperties();
+
+  queryProc->setProperty("qs", "declare option saxon:output 'omit-xml-declaration=yes'; (1,2,3)[10]");
+
+  const char *result = nullptr;
+  try {
+    result = queryProc->runQueryToString();
+    if (result[0] == '\0') {
+      sresult->success++;
+    } else {
+    cout << "Result :" << result << endl;
+      cout << "Result :" << strlen(result) << endl;
+      sresult->failure++;
+      sresult->failureList.push_back("testxQueryToString_OnEmptySequence1");
+    delete result;
+    }
+
+  } catch (SaxonApiException &e) {
+    sresult->failure++;
+    sresult->failureList.push_back("testxQueryToString_OnEmptySequence2");
+
+    cerr << "Error: " << e.getMessage() << endl;
+    cerr << "Error code: " << e.getErrorCode() << endl;
   }
 
   queryProc->clearParameters();
@@ -200,9 +234,6 @@ void testReusability(SaxonProcessor *processor, sResultCount *sresult) {
 
   if (input == nullptr) {
     cout << "testReusability failure - Source document is null." << endl;
-    if (processor->exceptionOccurred()) {
-      cerr << processor->getErrorMessage() << endl;
-    }
     sresult->failure++;
     sresult->failureList.push_back("testReusability");
     return;
@@ -235,18 +266,9 @@ void testReusability(SaxonProcessor *processor, sResultCount *sresult) {
     }
     delete val;
   } else {
-    if (queryProc2->exceptionOccurred()) {
       cerr << "failure in testReusability-1" << endl;
       sresult->failure++;
       sresult->failureList.push_back("testReusability-1");
-      SaxonApiException *exception = queryProc2->getException();
-      if (exception != nullptr) {
-        cout << "Exception found. " << endl;
-        const char *message = queryProc2->getErrorMessage();
-        cout << "Error Message = " << message << endl;
-        queryProc2->exceptionClear();
-      }
-    }
 
     return;
   }
@@ -281,18 +303,9 @@ void testReusability(SaxonProcessor *processor, sResultCount *sresult) {
     operator delete((char *)valStr);
     delete val2;
   } else {
-    if (queryProc3->exceptionOccurred()) {
       cerr << "failure in testReusability-2" << endl;
       sresult->failure++;
       sresult->failureList.push_back("testReusability-2");
-      SaxonApiException *exception = queryProc3->getException();
-      if (exception != nullptr) {
-        cout << "Exception found. " << endl;
-        const char *message = queryProc3->getErrorMessage();
-        cout << "Error Message = " << message << endl;
-        queryProc3->exceptionClear();
-      }
-    }
     delete value1;
     delete value2;
     delete queryProc2;
@@ -308,7 +321,7 @@ void testReusability(SaxonProcessor *processor, sResultCount *sresult) {
 }
 
 // Test requirement of license file - Test should fail
-void testXQueryLineNumberError(const char *cwd, sResultCount *sresult) {
+void testXQueryLineNumberError(const char *cwd, const string * const dataDir, sResultCount *sresult) {
   cout << endl << "Test testXQueryLineNumberError:" << endl;
   SaxonProcessor *processor = new SaxonProcessor(false);
   XQueryProcessor *queryProc = processor->newXQueryProcessor();
@@ -325,7 +338,8 @@ void testXQueryLineNumberError(const char *cwd, sResultCount *sresult) {
   if (cwd != nullptr) {
     queryProc->setcwd(cwd);
   }
-  queryProc->setProperty("s", "../data/cat.xml");
+  string xmlFile = CppTestUtils::concat(2, dataDir->c_str(), "/cat.xml");
+  queryProc->setProperty("s", xmlFile.c_str());
 
   queryProc->setProperty("qs", "saxon:line-number((//person)[1])");
   const char *result = nullptr;
@@ -350,7 +364,7 @@ void testXQueryLineNumberError(const char *cwd, sResultCount *sresult) {
 }
 
 // Test requirement of license file - Test should succeed
-void testXQueryLineNumber(const char *cwd, sResultCount *sresult) {
+void testXQueryLineNumber(const char *cwd, const std::string * const dataDir, sResultCount *sresult) {
   SaxonProcessor *processor = new SaxonProcessor(true);
   processor->setcwd(cwd);
   processor->setConfigurationProperty("l", "on");
@@ -364,8 +378,8 @@ void testXQueryLineNumber(const char *cwd, sResultCount *sresult) {
   // queryProc->setProperty("s", "data/cat.xml");
   queryProc->declareNamespace("saxon", "http://saxon.sf.net/");
 
-  queryProc->setProperty("qs", "saxon:line-number(doc('data/cat.xml')/out/"
-                               "person[1])"); /// out/person[1]
+  string qs = string { "saxon:line-number(doc('" } + *dataDir + string { "/cat.xml')/out/person[1])" };
+  queryProc->setProperty("qs", qs.c_str()); /// out/person[1]
   try {
     const char *result = queryProc->runQueryToString();
     cout << "Result :" << result << endl;
@@ -388,11 +402,7 @@ void testXQueryLineNumber(const char *cwd, sResultCount *sresult) {
 }
 
 int main(int argc, char *argv[]) {
-
-  const char *cwd = nullptr;
-  if (argc > 1) {
-    cwd = argv[1];
-  }
+  const string dataDir = argc > 1 ? string(argv[1]) : string();
 
   SaxonProcessor *processor = new SaxonProcessor(false);
 
@@ -400,14 +410,10 @@ int main(int argc, char *argv[]) {
        << endl
        << endl;
 
-  if (cwd != nullptr) {
-    processor->setcwd(cwd);
-  } else {
-    char buff[FILENAME_MAX]; // create string buffer to hold path
-    GetCurrentDir(buff, FILENAME_MAX);
-    processor->setcwd(buff);
-    cwd = (const char *)buff;
-  }
+  char buff[FILENAME_MAX]; // create string buffer to hold path
+  GetCurrentDir(buff, FILENAME_MAX);
+  processor->setcwd(buff);
+  const char *cwd = (const char *)buff;
 
   cout << "CWD = " << cwd << endl;
 
@@ -415,7 +421,7 @@ int main(int argc, char *argv[]) {
 
   sResultCount *sresult = new sResultCount();
 
-  testxQuery1(processor, query, sresult);
+  testxQuery1(processor, query, &dataDir, sresult);
 
   cout << endl
        << "============================================================="
@@ -446,17 +452,25 @@ int main(int argc, char *argv[]) {
        << "============================================================="
        << endl
        << endl;
-  testXQueryLineNumberError(cwd, sresult);
+  testXQueryLineNumberError(cwd, &dataDir, sresult);
   cout << endl
        << "============================================================="
        << endl
        << endl;
-  testXQueryLineNumber(cwd, sresult);
+  testXQueryLineNumber(cwd, &dataDir, sresult);
 
   cout << endl
        << "============================================================="
        << endl
        << endl;
+
+  testxQueryToString_OnEmptySequence(query, sresult);
+
+  cout << endl
+       << "============================================================="
+       << endl
+       << endl;
+
   testxQuery_ICU(processor, query, sresult);
 
   delete query;
