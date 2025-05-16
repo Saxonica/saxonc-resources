@@ -8,3 +8,16 @@ To run the PHP samples and PHPunit tests you will have to first compile and inst
 `cd samples/php`
 
 `wget -O phpunit.phar https://phar.phpunit.de/phpunit-10.phar`
+
+Full documentation for SaxonC 12 is available. The [SaxonC 12
+documentation](https://www.saxonica.com/saxon-c/documentation12/index.html)
+contains information specific to SaxonC - including instructions for
+installing and configuring the product, details of the SaxonC C/C++
+API, PHP API and Python3 API, and sample code. Meanwhile, the main
+[Saxon 12 documentation](https://www.saxonica.com/documentation12/index.html)
+contains further information relevant to SaxonC.
+
+For further information, see the [SaxonC web
+page](https://www.saxonica.com/saxon-c/index.xml). For bug reporting,
+lists of known bugs, and help forums, please visit
+[https://saxonica.plan.io/](https://saxonica.plan.io/).
