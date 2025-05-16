@@ -1,8 +1,7 @@
-#include "../../Saxon.C.API/SaxonProcessor.h"
-#include "../../Saxon.C.API/XdmNode.h"
-#include "../../Saxon.C.API/XdmValue.h"
+#include "saxonc/SaxonProcessor.h"
+#include "saxonc/XdmNode.h"
+#include "saxonc/XdmValue.h"
 #include "CppTestUtils.h"
-
 #include <string>
 
 using namespace std;
