@@ -106,6 +106,103 @@ XdmNode *getRoot(XdmNode *document)
   return root;
 }
 
+// Test case to process JSON parsed with parseJsonFromString
+void testParseJsonFromString(SaxonProcessor* processor, XPathProcessor* xpath, sResultCount* sresult) {
+
+    cout << endl << "Test testParseJsonFromString:" << endl;
+    xpath->clearParameters();
+    xpath->clearProperties();
+    XdmItem* input =
+        processor->parseJsonFromString("{\"foo\":\"bar\"}")->getHead();
+
+    xpath->setContextItem(input);
+    try {
+        XdmItem* result = xpath->evaluateSingle("?foo");
+        const char* messagei = result->getStringValue();
+        cout << "String Value of result=" << messagei << endl;
+        sresult->success++;
+        operator delete((char*)messagei);
+        delete result;
+    }
+    catch (SaxonApiException& e) {
+        cout << "Error Message = " << e.what() << endl;
+        sresult->failure++;
+        sresult->failureList.push_back("testParseJsonFromString");
+    }
+
+    xpath->clearParameters();
+    xpath->clearProperties();
+    delete input;
+}
+
+// Test case to process JSON parsed with parseJsonFromString
+void testParseJsonFromString2(SaxonProcessor* processor, XPathProcessor* xpath, sResultCount* sresult) {
+
+    cout << endl << "Test testParseJsonFromString2:" << endl;
+
+	try {
+    	XdmValue * input =
+        	processor->parseJsonFromString("{ \"myFunc\": {"
+                                                  "      \"as\": \"xs:integer?\","
+                                                  "      \"param\": ["
+                                                  "        \"xs:integer\""
+                                                  "      ],"
+                                                  "      \"arity\": [1]"
+                                                  "    }"
+                                                  "}");
+
+		if(input != nullptr) {
+
+			XdmItem * item = input->getHead();
+
+    		if(item != nullptr && item->isMap()) {
+				XdmMap * funcMap = (XdmMap *)item;
+
+				XdmValue * signatureValue = funcMap->get("myFunc");
+
+				XdmItem * signatureItem = signatureValue->getHead();
+
+				if(signatureItem != nullptr && signatureItem->isMap()) {
+					XdmMap * signatureMap = (XdmMap *)signatureItem;
+
+					XdmValue * paramsValue = signatureMap->get("param");
+
+					if(paramsValue != nullptr) {
+						XdmItem * paramsItem = paramsValue->getHead();
+						if(paramsItem != nullptr && paramsItem->isArray()) {
+							XdmArray * paramArray = (XdmArray *)paramsItem;
+							cout << "Param Array length=" << paramArray->arrayLength() << endl;
+							if(paramArray->arrayLength() >0) {
+								//Method asList() or values() can be used instead of get(i)
+								XdmValue * item0Value = paramArray->get(0);
+								XdmItem * item0 = item0Value->getHead();
+
+        						const char* messagei = item0->getStringValue();
+        						cout << "String Value of result=" << messagei << endl;
+        						sresult->success++;
+        						operator delete((char*)messagei);
+								delete item0;
+								delete item0Value;
+							}
+							delete paramArray;
+						}
+
+					}
+					delete signatureMap;
+				}
+				delete item;
+			}
+
+			delete input;
+		}
+    }
+    catch (SaxonApiException& e) {
+        cout << "Error Message = " << e.what() << endl;
+        sresult->failure++;
+        sresult->failureList.push_back("testParseJsonFromString2");
+    }
+}
+
 void testCopyConstructorForXdmNode(SaxonProcessor *processor,
                                          XPathProcessor *xpath,
                                          sResultCount *sresult) {
@@ -1240,6 +1337,19 @@ int main(int argc, char *argv[]) {
        << endl
        << endl;
   testXdmNodeEquals(xpathProc, &dataDir, sresult);
+
+  cout << endl
+       << "============================================================="
+       << endl
+       << endl;
+
+  testParseJsonFromString(processor, xpathProc, sresult);
+  cout << endl
+       << "============================================================="
+       << endl
+       << endl;
+
+  testParseJsonFromString2(processor, xpathProc, sresult);
 
   cout << endl
        << "============================================================="
